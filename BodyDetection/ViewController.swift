@@ -16,7 +16,7 @@ class ViewController: UIViewController, ARSessionDelegate {
     
     // The 3D character to display.
     var character: BodyTrackedEntity?
-    let characterOffset: SIMD3<Float> = [-1.0, 0, 0] // Offset the character by one meter to the left
+    let characterOffset: SIMD3<Float> = [0, 0, 0] // Offset the character //-1.0 by one meter to the left
     let characterAnchor = AnchorEntity()
     
     // A tracked raycast which is used to place the character accurately
@@ -60,6 +60,7 @@ class ViewController: UIViewController, ARSessionDelegate {
         for anchor in anchors {
             guard let bodyAnchor = anchor as? ARBodyAnchor else { continue }
             
+            
             // Update the position of the character anchor's position.
             let bodyPosition = simd_make_float3(bodyAnchor.transform.columns.3)
             characterAnchor.position = bodyPosition + characterOffset
@@ -73,6 +74,47 @@ class ViewController: UIViewController, ARSessionDelegate {
                 // 2. the character was loaded.
                 characterAnchor.addChild(character)
             }
+            let hipWorldPosition = bodyAnchor.transform
+            print("hipPosition", hipWorldPosition)
+            let skeleton = bodyAnchor.skeleton
+            let jointTransforms = skeleton.jointModelTransforms
+
+            for (i, jointTransform) in jointTransforms.enumerated() {
+                let parentIndex = skeleton.definition.parentIndices[ i ]
+                guard parentIndex != -1 else { continue }
+                let parentJointTransform = jointTransforms[parentIndex]
+                print(parentJointTransform)
+            }
+            
         }
     }
 }
+
+
+//
+//    func session(_ session: ARSession, didUpdate frame: ARFrame) {
+//        // Accessing ARBody2D Object from ARFrame
+//        let person = frame.detectedBody
+//
+//        // USe Skeleton Property to Access the Skeleton
+//        let skeleton2D = person?.skeleton
+//
+//        // Access Definition Object containing structure
+//        let definition = skeleton2D?.definition
+//
+//        //List of JointLandmarks
+//        let jointLandmarks = skeleton2D?.jointLandmarks
+//        print(jointLandmarks)
+//
+//        //Iterate over all landmarks
+//        for (i, joint) in jointLandmarks.enumerate() {
+//            // Find index of parent
+//            let parentIndex = definition.parentIndices[i]
+//
+//            // check if it's not the root
+//            guard parentIndex != -1 else {continue}
+//
+//            // find position of parent index
+//            let parentJoint = jointLandmarks [parentIndex.intValue]
+//        }
+//    }
