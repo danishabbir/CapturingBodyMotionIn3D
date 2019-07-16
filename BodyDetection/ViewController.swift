@@ -33,12 +33,14 @@ class ViewController: UIViewController, ARSessionDelegate {
         guard ARBodyTrackingConfiguration.isSupported else {
             fatalError("This feature is only supported on devices with an A12 chip")
         }
-
+        
+        print("hello world")
         // Run a body tracking configration.
         let configuration = ARBodyTrackingConfiguration()
         arView.session.run(configuration)
         
         arView.scene.addAnchor(characterAnchor)
+        
         
         // Asynchronously load the 3D character.
         _ = Entity.loadBodyTrackedAsync(named: "character/robot").sink(receiveCompletion: { completion in
@@ -59,8 +61,7 @@ class ViewController: UIViewController, ARSessionDelegate {
     func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) {
         for anchor in anchors {
             guard let bodyAnchor = anchor as? ARBodyAnchor else { continue }
-            
-            
+
             // Update the position of the character anchor's position.
             let bodyPosition = simd_make_float3(bodyAnchor.transform.columns.3)
             characterAnchor.position = bodyPosition + characterOffset
@@ -75,15 +76,26 @@ class ViewController: UIViewController, ARSessionDelegate {
                 characterAnchor.addChild(character)
             }
             let hipWorldPosition = bodyAnchor.transform
-            print("hipPosition", hipWorldPosition)
+            //print("hipPosition", hipWorldPosition)
             let skeleton = bodyAnchor.skeleton
             let jointTransforms = skeleton.jointModelTransforms
+            
+            //print("JointNames", skeleton.definition.jointNames)
+            //print("Joint", skeleton.jointLocalTransforms.)
+            //print("jointTransforms", jointTransforms)
+            print("indices", skeleton.definition.parentIndices)
+            
+            let footIndex = ARSkeletonDefinition.defaultBody3D.index(for: .rightFoot)
+            let footTransform = ARSkeletonDefinition.defaultBody3D.neutralBodySkeleton3D!.jointModelTransforms[footIndex]
+            print("footTransform", footTransform)
+            let distanceFromHipOnY = abs(footTransform.columns.3.y)
+            print (distanceFromHipOnY)
 
             for (i, jointTransform) in jointTransforms.enumerated() {
                 let parentIndex = skeleton.definition.parentIndices[ i ]
                 guard parentIndex != -1 else { continue }
                 let parentJointTransform = jointTransforms[parentIndex]
-                print(parentJointTransform)
+                //print("parentJointTransform", parentJointTransform)
             }
             
         }
